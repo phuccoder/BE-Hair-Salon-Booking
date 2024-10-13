@@ -32,6 +32,9 @@ public class AccountEntity {
 
     private boolean accountStatus=true;
 
+    @Column(nullable = false)
+    private Boolean emailVerified = false;
+
     private String otp;
 
     private String role;
