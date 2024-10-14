@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.springframework.data.relational.core.mapping.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +29,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ComboEntity {
+public class Combo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,5 +46,6 @@ public class ComboEntity {
     private String comboDescription;
 
     @OneToMany(mappedBy = "combo")
+    @JsonManagedReference
     private List<Services> services;
 }
