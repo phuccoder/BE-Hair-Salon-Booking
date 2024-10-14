@@ -1,9 +1,12 @@
 package com.example.hairsalon.controllers;
 
 import com.example.hairsalon.components.apis.CoreApiResponse;
+import com.example.hairsalon.components.exceptions.ApiException;
 import com.example.hairsalon.config.AppProperties;
 import com.example.hairsalon.requests.AccountSignInRequest;
 import com.example.hairsalon.requests.AccountSignUpRequest;
+import com.example.hairsalon.requests.UserRefreshRequest;
+import com.example.hairsalon.responses.RefreshResponse;
 import com.example.hairsalon.responses.SignInResponse;
 import com.example.hairsalon.services.IAccountService;
 import jakarta.servlet.http.Cookie;
@@ -11,11 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -44,6 +45,39 @@ public class AccountController {
         response.addCookie(cookie);
 
         return CoreApiResponse.success(signIn);
+    }
+
+    @GetMapping("/verify")
+    public CoreApiResponse<?> verify(
+            @RequestParam Long userId,
+            @RequestParam String token
+    ) {
+        accountService.verify(userId,token);
+        return CoreApiResponse.success("User verified successfully");
+    }
+
+    @PostMapping("/refresh")
+    public CoreApiResponse<?> refresh(
+            @CookieValue(value = "refreshToken", required = false) String cookieRT,
+            @RequestBody UserRefreshRequest bodyRT
+    ) {
+        if(bodyRT == null && !isValidToken(cookieRT)){
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid token");
+        }
+        String token = bodyRT != null ? bodyRT.getRefreshToken() : cookieRT;
+
+        String accessToken = accountService.refresh(token);
+
+        return CoreApiResponse.success(new RefreshResponse(accessToken),"User refresh token successfully");
+    }
+
+    private boolean isValidToken(String token) {
+        return token != null && isJWT(token);
+    }
+
+    private boolean isJWT(String token) {
+        String[] parts = token.split("\\.");
+        return parts.length == 3;
     }
 
 
