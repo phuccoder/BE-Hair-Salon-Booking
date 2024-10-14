@@ -12,7 +12,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+
 import org.springframework.data.relational.core.mapping.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "services")
@@ -27,10 +32,14 @@ public class Services {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer serviceID;
 
-    @Column(name = "serviceName") 
+    @Column(name = "serviceName")
     private String serviceName;
 
+    @Column(name = "servicePrice", precision = 10, scale = 0)
+    private BigDecimal servicePrice;
+
     @ManyToOne
-    @JoinColumn(name = "comboID")
-    private ComboEntity combo;
+    @JoinColumn(name = "comboID", nullable = true)
+    @JsonBackReference
+    private Combo combo;
 }

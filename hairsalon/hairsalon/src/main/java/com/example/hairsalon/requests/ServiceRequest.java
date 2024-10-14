@@ -1,5 +1,7 @@
 package com.example.hairsalon.requests;
 
+import java.math.BigDecimal;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,5 +19,7 @@ public class ServiceRequest {
     private String serviceName;
 
     private Integer comboID;
+
+    private BigDecimal servicePrice;
     
 }

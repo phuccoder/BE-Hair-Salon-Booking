@@ -1,7 +1,7 @@
 package com.example.hairsalon.services;
 
 import com.example.hairsalon.models.Services;
-import com.example.hairsalon.models.ComboEntity;
+import com.example.hairsalon.models.Combo;
 import com.example.hairsalon.repositories.ServiceRepository;
 import com.example.hairsalon.repositories.ComboRepository;
 import com.example.hairsalon.requests.ServiceRequest;
@@ -31,7 +31,7 @@ public class ServicesService {
                 .build();
 
         if (request.getComboID() != null) {
-            ComboEntity combo = comboRepository.findById(request.getComboID())
+            Combo combo = comboRepository.findById(request.getComboID())
                     .orElseThrow(() -> new IllegalArgumentException("Combo ID is not found"));
             service.setCombo(combo);
         } else {
@@ -58,9 +58,10 @@ public class ServicesService {
                 .orElseThrow(() -> new IllegalArgumentException("Service ID is not found"));
 
         existingService.setServiceName(request.getServiceName());
+        existingService.setServicePrice(request.getServicePrice());
 
         if (request.getComboID() != null) {
-            ComboEntity combo = comboRepository.findById(request.getComboID())
+            Combo combo = comboRepository.findById(request.getComboID())
                     .orElseThrow(() -> new IllegalArgumentException("Combo ID is not found"));
             existingService.setCombo(combo);
         } else {
@@ -70,7 +71,8 @@ public class ServicesService {
         return serviceRepository.save(existingService);
     }
 
-    // Delete service
+    // Delete serviceThe method builder() is undefined for the type
+    // ServiceResponseJava(67108964)
     @Transactional
     public void deleteService(Integer id) {
         if (!serviceRepository.existsById(id)) {
