@@ -1,6 +1,7 @@
-package com.example.hairsalon.controllers;
+package com.example.hairsalon.controllers.combos;
 
 import com.example.hairsalon.requests.ComboRequest;
+import com.example.hairsalon.requests.CreateComboRequest;
 import com.example.hairsalon.services.ComboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/combos")
+@RequestMapping("/api/combos-management")
 @Validated
 public class ComboController {
 
@@ -20,12 +21,13 @@ public class ComboController {
 
     // Create combo
     @PostMapping("/create-combo")
-    public ResponseEntity<?> createCombo(@RequestBody ComboRequest request) {
-        return comboService.createCombo(request);
+    public ResponseEntity<?> createCombo(@RequestBody CreateComboRequest createComboRequest) {
+        return comboService.createComboWithServices(createComboRequest.getComboRequest(),
+                createComboRequest.getServiceIds());
     }
 
     // Get all combos
-    @GetMapping
+    @GetMapping("/get-all-combos")
     public ResponseEntity<List<?>> getAllCombos() {
         return ResponseEntity.ok(comboService.getAllCombos());
     }
@@ -52,23 +54,5 @@ public class ComboController {
     @PostMapping("/add-service-to-combo/{comboID}/{serviceID}")
     public ResponseEntity<?> addServiceToCombo(@PathVariable Integer comboID, @PathVariable Integer serviceID) {
         return comboService.addServiceToCombo(comboID, serviceID);
-    }
-
-    // Remove service from combo
-    @DeleteMapping("/remove-service-from-combo/{comboID}/{serviceID}")
-    public ResponseEntity<?> removeServiceFromCombo(@PathVariable Integer comboID, @PathVariable Integer serviceID) {
-        return comboService.removeServiceFromCombo(comboID, serviceID);
-    }
-
-    // Get all services in combo
-    @GetMapping("/get-all-services-in-combo/{comboID}")
-    public ResponseEntity<?> getAllServicesInCombo(@PathVariable Integer comboID) {
-        return comboService.getAllServicesInCombo(comboID);
-    }
-
-    // Get all combos with services
-    @GetMapping("/get-all-combos-with-services/{serviceID}")
-    public ResponseEntity<?> getAllCombosWithServices(@PathVariable Integer serviceID) {
-        return comboService.getAllCombosWithService(serviceID);
     }
 }

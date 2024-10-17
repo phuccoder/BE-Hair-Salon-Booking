@@ -1,10 +1,15 @@
 package com.example.hairsalon.services;
 
 import com.example.hairsalon.models.Combo;
+import com.example.hairsalon.models.ComboDetail;
 import com.example.hairsalon.models.Services;
+import com.example.hairsalon.repositories.ComboDetailRepository;
 import com.example.hairsalon.repositories.ComboRepository;
 import com.example.hairsalon.repositories.ServiceRepository;
 import com.example.hairsalon.requests.ComboRequest;
+import com.example.hairsalon.responses.ComboDetailResponse;
+import com.example.hairsalon.responses.ComboResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -26,28 +32,103 @@ public class ComboService {
     @Autowired
     private ServiceRepository serviceRepository;
 
+    @Autowired
+    private ComboDetailRepository comboDetailRepository;
+
     // Create combo
     @Transactional
-    public ResponseEntity<?> createCombo(ComboRequest request) {
+    public ResponseEntity<?> createComboWithServices(ComboRequest request, List<Integer> serviceIds) {
+        // Check if combo name already exists
+        if (comboRepository.existsByComboName(request.getComboName())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Combo already exists");
+        }
+
+        // Tạo combo mới
         Combo combo = Combo.builder()
                 .comboName(request.getComboName())
-                .comboPrice(new BigDecimal(request.getComboPrice()))
+                .comboPrice(new BigDecimal(request.getComboPrice())) // Combo price
                 .comboDescription(request.getComboDescription())
                 .build();
 
         comboRepository.save(combo);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Combo created successfully");
 
+        // If serviceIds is null or empty, skip adding services
+        if (serviceIds != null && !serviceIds.isEmpty()) {
+            // Filter out null service IDs
+            List<Integer> validServiceIds = serviceIds.stream()
+                    .filter(serviceId -> serviceId != null)
+                    .collect(Collectors.toList());
+
+            // Tính tổng giá của các dịch vụ được thêm vào combo
+            BigDecimal totalServicePrice = BigDecimal.ZERO;
+            for (Integer serviceId : validServiceIds) {
+                Optional<Services> serviceOptional = serviceRepository.findById(serviceId);
+                if (serviceOptional.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Service not found with ID: " + serviceId);
+                }
+                Services service = serviceOptional.get();
+                totalServicePrice = totalServicePrice.add(service.getServicePrice());
+
+                // Thêm dịch vụ vào combo
+                ComboDetail comboDetail = ComboDetail.builder()
+                        .combo(combo)
+                        .service(service)
+                        .build();
+                comboDetailRepository.save(comboDetail);
+            }
+
+            // tổng giá của các dịch vụ không được vượt quá giá của combo
+            if (totalServicePrice.compareTo(combo.getComboPrice()) > 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Total service price exceeds combo price");
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("Combo created with services successfully");
+    }
+
+    // Map Combo entity to ComboResponse
+    private ComboResponse mapToComboResponse(Combo combo) {
+        List<ComboDetailResponse> comboDetailResponses = combo.getComboDetails().stream()
+                .map(this::mapToComboDetailResponse)
+                .collect(Collectors.toList());
+
+        return ComboResponse.builder()
+                .comboID(combo.getComboID())
+                .comboName(combo.getComboName())
+                .comboPrice(combo.getComboPrice())
+                .comboDescription(combo.getComboDescription())
+                .comboDetails(comboDetailResponses)
+                .build();
+    }
+
+    // Map ComboDetail entity to ComboDetailResponse
+    private ComboDetailResponse mapToComboDetailResponse(ComboDetail comboDetail) {
+        return ComboDetailResponse.builder()
+                .comboDetailID(comboDetail.getComboDetailID())
+                .serviceID(comboDetail.getService().getServiceID())
+                .serviceName(comboDetail.getService().getServiceName())
+                .servicePrice(comboDetail.getService().getServicePrice())
+                .build();
     }
 
     // Get all combos
-    public List<Combo> getAllCombos() {
-        return comboRepository.findAll();
+    public List<ComboResponse> getAllCombos() {
+        return comboRepository.findAll().stream()
+                .map(this::mapToComboResponse)
+                .collect(Collectors.toList());
     }
 
     // Get combo by ID
-    public  ResponseEntity<Optional<Combo>> getComboById(Integer id) {
-        return ResponseEntity.ok(comboRepository.findById(id));
+    public ResponseEntity<?> getComboById(Integer id) {
+        Optional<Combo> comboOptional = comboRepository.findById(id);
+
+        if (comboOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Combo not found");
+        }
+
+        Combo combo = comboOptional.get();
+        return ResponseEntity.status(HttpStatus.OK).body(mapToComboResponse(combo));
     }
 
     // Update combo
@@ -75,6 +156,7 @@ public class ComboService {
         if (!comboRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Combo not found");
         }
+        comboDetailRepository.deleteByCombo_ComboID(id);
         comboRepository.deleteById(id);
         return ResponseEntity.status(HttpStatus.OK).body("Combo deleted successfully");
     }
@@ -96,56 +178,26 @@ public class ComboService {
         Combo combo = comboOptional.get();
         Services service = serviceOptional.get();
 
-        service.setCombo(combo);
-        serviceRepository.save(service);
+        // Calculate total price of services in combo
+        BigDecimal totalServicePrice = combo.getComboDetails().stream()
+                .map(cd -> cd.getService().getServicePrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        totalServicePrice = totalServicePrice.add(service.getServicePrice());
+
+        // Check if total service price exceeds combo pric
+        if (totalServicePrice.compareTo(combo.getComboPrice()) > 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Total service price exceeds combo price");
+        }
+
+        ComboDetail comboDetail = ComboDetail.builder()
+                .combo(combo)
+                .service(service)
+                .build();
+
+        comboDetailRepository.save(comboDetail);
 
         return ResponseEntity.status(HttpStatus.OK).body("Service added to combo successfully");
     }
 
-    // Remove service from combo
-    @Transactional
-    public ResponseEntity<?> removeServiceFromCombo(Integer comboId, Integer serviceId) {
-        Optional<Combo> comboOptional = comboRepository.findById(comboId);
-        Optional<Services> serviceOptional = serviceRepository.findById(serviceId);
-
-        if (comboOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Combo not found");
-        }
-
-        if (serviceOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found");
-        }
-
-        Combo combo = comboOptional.get();
-        Services service = serviceOptional.get();
-
-        service.setCombo(null);
-        serviceRepository.save(service);
-
-        return ResponseEntity.status(HttpStatus.OK).body("Service removed from combo successfully");
-    }
-
-    // Get all services in combo
-    public ResponseEntity<?> getAllServicesInCombo(Integer comboId) {
-        Optional<Combo> comboOptional = comboRepository.findById(comboId);
-
-        if (comboOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Combo not found");
-        }
-
-        Combo combo = comboOptional.get();
-        return ResponseEntity.ok(combo.getServices());
-    }
-
-    // Get all combos with service
-    public ResponseEntity<?> getAllCombosWithService(Integer serviceId) {
-        Optional<Services> serviceOptional = serviceRepository.findById(serviceId);
-
-        if (serviceOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found");
-        }
-
-        Services service = serviceOptional.get();
-        return ResponseEntity.ok(service.getCombo());
-    }
 }

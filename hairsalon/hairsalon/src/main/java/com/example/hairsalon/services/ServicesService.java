@@ -2,9 +2,12 @@ package com.example.hairsalon.services;
 
 import com.example.hairsalon.models.Services;
 import com.example.hairsalon.models.Combo;
+import com.example.hairsalon.models.ComboDetail;
 import com.example.hairsalon.repositories.ServiceRepository;
+import com.example.hairsalon.repositories.ComboDetailRepository;
 import com.example.hairsalon.repositories.ComboRepository;
 import com.example.hairsalon.requests.ServiceRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +15,9 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.hibernate.sql.Update;
+import org.springframework.http.ResponseEntity;
 
 @Service
 @Validated
@@ -23,22 +29,19 @@ public class ServicesService {
     @Autowired
     private ComboRepository comboRepository;
 
+    @Autowired
+    private ComboDetailRepository comboDetailRepository;
+
     // Create service
     @Transactional
-    public Services createService(ServiceRequest request) {
+    public ResponseEntity<?> createService(ServiceRequest request) {
         Services service = Services.builder()
                 .serviceName(request.getServiceName())
+                .servicePrice(request.getServicePrice())
                 .build();
 
-        if (request.getComboID() != null) {
-            Combo combo = comboRepository.findById(request.getComboID())
-                    .orElseThrow(() -> new IllegalArgumentException("Combo ID is not found"));
-            service.setCombo(combo);
-        } else {
-            service.setCombo(null);
-        }
-
-        return serviceRepository.save(service);
+        Services savedService = serviceRepository.save(service);
+        return ResponseEntity.ok("Service created successfully");
     }
 
     // Get all services
@@ -53,31 +56,25 @@ public class ServicesService {
 
     // Update service
     @Transactional
-    public Services updateService(Integer id, ServiceRequest request) {
-        Services existingService = serviceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Service ID is not found"));
-
-        existingService.setServiceName(request.getServiceName());
-        existingService.setServicePrice(request.getServicePrice());
-
-        if (request.getComboID() != null) {
-            Combo combo = comboRepository.findById(request.getComboID())
-                    .orElseThrow(() -> new IllegalArgumentException("Combo ID is not found"));
-            existingService.setCombo(combo);
-        } else {
-            existingService.setCombo(null);
+    public ResponseEntity<?> updateService(Integer serviceID, ServiceRequest serviceRequest) {
+        Services existingService = serviceRepository.findById(serviceID).orElse(null);
+        if (existingService == null) {
+            return ResponseEntity.badRequest().body("Service ID is not found");
         }
 
-        return serviceRepository.save(existingService);
+        existingService.setServiceName(serviceRequest.getServiceName());
+        existingService.setServicePrice(serviceRequest.getServicePrice());
+        serviceRepository.save(existingService);
+        return ResponseEntity.ok("Service updated successfully");
     }
 
     // Delete serviceThe method builder() is undefined for the type
-    // ServiceResponseJava(67108964)
     @Transactional
     public void deleteService(Integer id) {
         if (!serviceRepository.existsById(id)) {
             throw new IllegalArgumentException("Service ID is not found");
         }
+        comboDetailRepository.deleteByService_ServiceID(id);
         serviceRepository.deleteById(id);
     }
 }
