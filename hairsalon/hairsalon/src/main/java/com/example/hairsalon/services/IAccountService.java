@@ -6,6 +6,8 @@ import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountUpdateRequest;
 import com.example.hairsalon.responses.SignInResponse;
 
+import java.util.ArrayList;
+
 public interface IAccountService {
     void signUp(AccountSignUpRequest request);
 
@@ -15,8 +17,14 @@ public interface IAccountService {
 
     SignInResponse signIn(AccountSignInRequest request);
 
+    AccountEntity getAccountByIdExceptAdmin(Long id);
+
     AccountEntity getAccountById(Long id);
 
+    ArrayList<AccountEntity> getAllAccount();
+
     AccountEntity updatePersonalAccount(Long id, AccountUpdateRequest accountUpdateRequest);
+
+    AccountEntity banUser(Long id);
 
 }

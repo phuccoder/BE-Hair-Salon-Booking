@@ -67,7 +67,7 @@ public class UserController {
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/{id}")
     public CoreApiResponse<AccountEntity> getUserById(@PathVariable Long id) {
-        return CoreApiResponse.success(accountService.getAccountById(id));
+        return CoreApiResponse.success(accountService.getAccountByIdExceptAdmin(id));
     }
 
     @PostMapping("/refresh")

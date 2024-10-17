@@ -15,6 +15,7 @@ import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountUpdateRequest;
 import com.example.hairsalon.responses.SignInResponse;
 import com.example.hairsalon.services.IAccountService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,6 +33,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 @Service
 @RequiredArgsConstructor
@@ -93,12 +96,22 @@ public class AccountService implements IAccountService {
                 .build();
     }
 
-    @PreAuthorize("hasRole('USER')")
     @Override
-    public AccountEntity getAccountById(Long id) {
-        return accountRepository.findById(id)
+    public ArrayList<AccountEntity> getAllAccount() {
+        return accountRepository.findAllUsersExceptAdmin();
+    }
+
+
+    @Override
+    public AccountEntity getAccountByIdExceptAdmin(Long id) {
+        return accountRepository.findByIdExceptAdmin(id)
                 .orElseThrow(()
                         -> new DataNotFoundException("User", "id", id));
+    }
+
+    @Override
+    public AccountEntity getAccountById(Long id) {
+        return accountRepository.findById(id).orElseThrow(() -> new DataNotFoundException("User", "id", id));
     }
 
     @Override
@@ -126,7 +139,6 @@ public class AccountService implements IAccountService {
             if(account.getEmailVerified()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Account with this phone or email already exists");
             } else {
-                System.out.print("SEND MAIL");
                 sendVerifyMail(account);
                 return;
             }
@@ -144,7 +156,7 @@ public class AccountService implements IAccountService {
         account.setAccountPhone(request.getAccountPhone());
         account.setPassword(passwordEncoder.encode(request.getPassword()));
         account.setEmailVerified(false);
-        account.setRole("user"); // Assign default role
+        account.setRole("user");
 
         // Save the new account to the repository
         accountRepository.save(account);
@@ -183,6 +195,14 @@ public class AccountService implements IAccountService {
         user.setEmailVerified(true);
 
         accountRepository.save(user);
+    }
+
+    @Override
+    public AccountEntity banUser(Long id) {
+        AccountEntity existUser = accountRepository.findById(id).orElseThrow(() -> new DataNotFoundException("User", "id", id));
+
+        existUser.setAccountStatus(false);
+        return accountRepository.save(existUser);
     }
 
     private void sendVerifyMail(AccountEntity user) {
