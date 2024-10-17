@@ -17,9 +17,7 @@ import lombok.NoArgsConstructor;
 public class ServiceRequest {
 
     private String serviceName;
-
-    private Integer comboID;
-
     private BigDecimal servicePrice;
+    private Integer comboID;
     
 }

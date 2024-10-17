@@ -1,10 +1,5 @@
 package com.example.hairsalon.models;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.springframework.data.relational.core.mapping.Table;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -13,7 +8,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,30 +20,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "combo")
+@Table(name = "comboDetail")
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Combo {
+public class ComboDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comboID")
-    private Integer comboID;
+    @Column(name = "comboDetailID")
+    private Integer comboDetailID;
 
-    @Column(name = "comboName")
-    private String comboName;
+    @ManyToOne
+    @JoinColumn(name = "comboID", referencedColumnName = "comboID")
+    private Combo combo;
 
-    @Column(name = "comboPrice")
-    private BigDecimal comboPrice;
-
-    @Column(name = "comboDescription")
-    private String comboDescription;
-
-    @OneToMany(mappedBy = "combo")
-    private List<ComboDetail> comboDetails;
-
+    @ManyToOne
+    @JoinColumn(name = "serviceID", referencedColumnName = "serviceID")
+    private Services service;
+    
 }

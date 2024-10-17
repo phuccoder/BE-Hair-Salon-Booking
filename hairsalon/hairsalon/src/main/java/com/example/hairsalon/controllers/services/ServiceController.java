@@ -1,4 +1,4 @@
-package com.example.hairsalon.controllers;
+package com.example.hairsalon.controllers.services;
 
 import com.example.hairsalon.models.Services;
 import com.example.hairsalon.requests.ServiceRequest;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/services")
+@RequestMapping("/api/services-management")
 public class ServiceController {
 
     @Autowired
@@ -20,9 +20,8 @@ public class ServiceController {
 
     // Create service
     @PostMapping
-    public ResponseEntity<Services> createService(@RequestBody ServiceRequest request) {
-        Services service = serviceService.createService(request);
-        return new ResponseEntity<>(service, HttpStatus.CREATED);
+    public ResponseEntity<?> createService(@RequestBody ServiceRequest request) {
+        return serviceService.createService(request);
     }
 
     // Get all services
@@ -33,7 +32,7 @@ public class ServiceController {
     }
 
     // Get service by ID
-    @GetMapping("/{id}")
+    @GetMapping("/get-service-by-id/{id}")
     public ResponseEntity<Services> getServiceById(@PathVariable Integer id) {
         Optional<Services> service = serviceService.getServiceById(id);
         return service.map(ResponseEntity::ok)
@@ -41,15 +40,14 @@ public class ServiceController {
     }
 
     // Update service
-    @PutMapping("/{id}")
-    public ResponseEntity<Services> updateService(@PathVariable Integer id,
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateService(@PathVariable Integer id,
             @RequestBody ServiceRequest request) {
-        Services updatedService = serviceService.updateService(id, request);
-        return ResponseEntity.ok(updatedService);
+        return serviceService.updateService(id, request);
     }
 
     // Delete service
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteService(@PathVariable Integer id) {
         serviceService.deleteService(id);
         return ResponseEntity.noContent().build();
