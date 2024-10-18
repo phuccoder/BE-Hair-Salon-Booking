@@ -38,8 +38,4 @@ public class Services {
     @Column(name = "servicePrice", precision = 10, scale = 0)
     private BigDecimal servicePrice;
 
-    @ManyToOne
-    @JoinColumn(name = "comboID", nullable = true)
-    @JsonBackReference
-    private Combo combo;
 }

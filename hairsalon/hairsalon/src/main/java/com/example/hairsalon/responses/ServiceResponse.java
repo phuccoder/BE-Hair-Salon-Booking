@@ -16,5 +16,4 @@ public class ServiceResponse {
     private Integer serviceID;
     private String serviceName;
     private BigDecimal servicePrice;
-    private Integer comboID;
 }
