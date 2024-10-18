@@ -1,23 +1,19 @@
 package com.example.hairsalon.services;
 
-import com.example.hairsalon.models.Services;
-import com.example.hairsalon.models.Combo;
-import com.example.hairsalon.models.ComboDetail;
-import com.example.hairsalon.repositories.ServiceRepository;
-import com.example.hairsalon.repositories.ComboDetailRepository;
-import com.example.hairsalon.repositories.ComboRepository;
-import com.example.hairsalon.requests.ServiceRequest;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.hibernate.sql.Update;
-import org.springframework.http.ResponseEntity;
+import com.example.hairsalon.models.Services;
+import com.example.hairsalon.repositories.ComboDetailRepository;
+import com.example.hairsalon.repositories.ComboRepository;
+import com.example.hairsalon.repositories.ServiceRepository;
+import com.example.hairsalon.requests.ServiceRequest;
 
 @Service
 @Validated
@@ -35,12 +31,17 @@ public class ServicesService {
     // Create service
     @Transactional
     public ResponseEntity<?> createService(ServiceRequest request) {
+
+        if (serviceRepository.existsByServiceName(request.getServiceName())) {
+            return ResponseEntity.badRequest().body("Service already exists");
+        }
+
         Services service = Services.builder()
                 .serviceName(request.getServiceName())
                 .servicePrice(request.getServicePrice())
                 .build();
 
-        Services savedService = serviceRepository.save(service);
+        serviceRepository.save(service);
         return ResponseEntity.ok("Service created successfully");
     }
 
@@ -70,11 +71,12 @@ public class ServicesService {
 
     // Delete serviceThe method builder() is undefined for the type
     @Transactional
-    public void deleteService(Integer id) {
+    public ResponseEntity<?> deleteService(Integer id) {
         if (!serviceRepository.existsById(id)) {
-            throw new IllegalArgumentException("Service ID is not found");
+            return ResponseEntity.badRequest().body("Service not found");
         }
         comboDetailRepository.deleteByService_ServiceID(id);
         serviceRepository.deleteById(id);
+        return ResponseEntity.ok("Service deleted successfully");
     }
 }

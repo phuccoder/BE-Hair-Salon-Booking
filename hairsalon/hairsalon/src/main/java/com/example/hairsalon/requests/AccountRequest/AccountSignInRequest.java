@@ -1,4 +1,4 @@
-package com.example.hairsalon.requests;
+package com.example.hairsalon.requests.AccountRequest;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +15,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class AccountSignInRequest implements Serializable {
     @NotBlank
-    @Email
     private String emailOrPhone;
 
     @NotBlank
