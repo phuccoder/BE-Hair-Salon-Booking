@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.hairsalon.requests.ComboRequest;
 import com.example.hairsalon.services.ComboService;
 
+@RestController
 @RequestMapping("/api/customer/combos")
 public class ComboControllerByCustomer {
 

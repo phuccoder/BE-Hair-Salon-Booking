@@ -198,4 +198,31 @@ public class ComboService {
         return ResponseEntity.status(HttpStatus.OK).body("Service added to combo successfully");
     }
 
+    //Remove service from a combo 
+    @Transactional
+    public ResponseEntity<?> removeServiceFromCombo(Integer comboID, Integer serviceID) {
+        Optional<Combo> comboOptional = comboRepository.findById(comboID);
+        if (comboOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Combo not found");
+        }
+
+        Optional<Services> serviceOptional = serviceRepository.findById(serviceID);
+        if (serviceOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found");
+        }
+
+        Combo combo = comboOptional.get();
+        Services service = serviceOptional.get();
+
+        Optional<ComboDetail> comboDetailOptional = comboDetailRepository.findByComboAndService(combo, service);
+        if (comboDetailOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Service not found in combo");
+        }
+
+        comboDetailRepository.delete(comboDetailOptional.get());
+
+        return ResponseEntity.status(HttpStatus.OK).body("Service removed from combo successfully");
+    }
+    
+
 }
