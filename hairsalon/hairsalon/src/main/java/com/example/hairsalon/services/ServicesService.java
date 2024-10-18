@@ -71,11 +71,12 @@ public class ServicesService {
 
     // Delete serviceThe method builder() is undefined for the type
     @Transactional
-    public void deleteService(Integer id) {
+    public ResponseEntity<?> deleteService(Integer id) {
         if (!serviceRepository.existsById(id)) {
-            throw new IllegalArgumentException("Service ID is not found");
+            return ResponseEntity.badRequest().body("Service not found");
         }
         comboDetailRepository.deleteByService_ServiceID(id);
         serviceRepository.deleteById(id);
+        return ResponseEntity.ok("Service deleted successfully");
     }
 }
