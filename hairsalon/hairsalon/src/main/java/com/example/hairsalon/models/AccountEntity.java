@@ -3,6 +3,7 @@ package com.example.hairsalon.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Entity
@@ -22,6 +23,7 @@ public class AccountEntity {
     @Column(name = "accountName", nullable = false)
     private String accountName;
 
+    @Pattern(regexp = "^0[0-9]{9}$", message = "Invalid phone number")
     @Column(name = "accountPhone", nullable = false)
     private String accountPhone;
 
