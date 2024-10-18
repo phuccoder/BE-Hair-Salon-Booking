@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/stylist")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('STYLIST, ADMIN, STAFF')")
+@PreAuthorize("hasAnyRole('STYLIST', 'ADMIN', 'STAFF')")
 public class StylistController {
 
     private final IStylistService stylistService;
