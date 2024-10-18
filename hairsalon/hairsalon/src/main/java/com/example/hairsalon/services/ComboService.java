@@ -45,7 +45,7 @@ public class ComboService {
 
         Combo combo = Combo.builder()
                 .comboName(request.getComboName())
-                .comboPrice(new BigDecimal(request.getComboPrice()))
+                .comboPrice(request.getComboPrice())
                 .comboDescription(request.getComboDescription())
                 .build();
 
@@ -140,7 +140,7 @@ public class ComboService {
 
         Combo existingCombo = existingComboOptional.get();
         existingCombo.setComboName(request.getComboName());
-        existingCombo.setComboPrice(new BigDecimal(request.getComboPrice()));
+        existingCombo.setComboPrice(request.getComboPrice());
         existingCombo.setComboDescription(request.getComboDescription());
 
         comboRepository.save(existingCombo);
