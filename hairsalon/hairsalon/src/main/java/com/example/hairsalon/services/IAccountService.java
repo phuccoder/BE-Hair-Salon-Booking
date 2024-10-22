@@ -27,4 +27,6 @@ public interface IAccountService {
 
     AccountEntity banUser(Long id);
 
+    void signUpByRole(AccountSignUpRequest request, String role);
+
 }

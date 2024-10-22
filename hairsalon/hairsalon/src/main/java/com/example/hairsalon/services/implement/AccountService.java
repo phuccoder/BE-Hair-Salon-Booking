@@ -205,6 +205,47 @@ public class AccountService implements IAccountService {
         return accountRepository.save(existUser);
     }
 
+    @Override
+    public void signUpByRole(AccountSignUpRequest request, String role) {
+        // Check if the account exists based on phone or email
+        Optional<AccountEntity> accountOptional = accountRepository.findByAccountEmail(request.getAccountEmail());
+
+        if (accountOptional.isPresent()) {
+            AccountEntity account = accountOptional.get();
+            if(account.getEmailVerified()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Account with this phone or email already exists");
+            }
+        }
+
+        if(!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Password and Confirm Password is not match");
+        }
+
+        if(role.equals("admin")) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You cant create admin");
+        }
+
+        if(role.equals("user")){
+            throw new ApiException(HttpStatus.FORBIDDEN, "You cant create user with admin");
+        }
+
+        if(role.equals("stylist")) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Stylist need to create in stylist api");
+        }
+
+        // Create and populate new account entity
+        AccountEntity account = new AccountEntity();
+        account.setAccountName(request.getAccountName());
+        account.setAccountEmail(request.getAccountEmail());
+        account.setAccountPhone(request.getAccountPhone());
+        account.setPassword(passwordEncoder.encode(request.getPassword()));
+        account.setEmailVerified(true);
+        account.setRole(role.toLowerCase());
+
+        // Save the new account to the repository
+        accountRepository.save(account);
+    }
+
     private void sendVerifyMail(AccountEntity user) {
         String token = tokenProvider.createToken(user.getAccountID(), 300000); // 5 minutes
         String urlPattern = verifyUrl + "?userId={0}&token={1}";

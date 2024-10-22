@@ -2,6 +2,7 @@ package com.example.hairsalon.controllers;
 
 import com.example.hairsalon.components.apis.CoreApiResponse;
 import com.example.hairsalon.models.AccountEntity;
+import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountUpdateRequest;
 import com.example.hairsalon.services.IAccountService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,12 @@ public class AccountController {
     @DeleteMapping("/{id}")
     public CoreApiResponse<AccountEntity> banUser(@PathVariable Long id) {
         return CoreApiResponse.success(accountService.banUser(id));
+    }
+
+    @PostMapping("/create/{role}")
+    public CoreApiResponse<?> createAccount(@RequestBody AccountSignUpRequest accountSignUpRequest, @PathVariable String role) {
+        accountService.signUpByRole(accountSignUpRequest, role);
+        return CoreApiResponse.success("Create Successfully! Please check mail to verify!");
     }
 
 }
