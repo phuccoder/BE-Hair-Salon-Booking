@@ -1,6 +1,7 @@
 package com.example.hairsalon.components.securities;
 
 import com.example.hairsalon.models.AccountEntity;
+import com.example.hairsalon.models.StylistEntity;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UserPrincipal implements UserDetails {
     private AccountEntity user;
+    private StylistEntity stylist;
 
     public UserPrincipal(AccountEntity user) {
         this.user = user;
@@ -32,6 +34,12 @@ public class UserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
+    // Constructor for StylistEntity
+    public UserPrincipal(StylistEntity stylist, Collection<? extends GrantedAuthority> authorities) {
+        this.stylist = stylist;
+        this.authorities = authorities;
+    }
+
     public static UserPrincipal create(AccountEntity user) {
         List<GrantedAuthority> authorities = Collections.
                 singletonList(new SimpleGrantedAuthority("ROLE_"+user.getRole().toUpperCase()));
@@ -42,24 +50,30 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-
+    // Create method for StylistEntity
+    public static UserPrincipal create(StylistEntity stylist) {
+        List<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + stylist.getRole().toUpperCase())
+        );
+        return new UserPrincipal(stylist, authorities);
+    }
 
     public Long getId() {
-        return user.getAccountID();
+        return user != null ? user.getAccountID() : stylist.getStylistID();
     }
 
     public String getEmail() {
-        return user.getAccountEmail();
+        return user != null ? user.getAccountEmail() : stylist.getStylistEmail();
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user != null ? user.getPassword() : stylist.getStylistPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getAccountName();
+        return user != null ? user.getAccountName() : stylist.getStylistName();
     }
 
     @Override

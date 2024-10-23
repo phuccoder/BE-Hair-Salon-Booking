@@ -7,8 +7,10 @@ import com.example.hairsalon.components.mapper.AccountMapper;
 import com.example.hairsalon.components.securities.TokenProvider;
 import com.example.hairsalon.components.securities.UserPrincipal;
 import com.example.hairsalon.models.AccountEntity;
+import com.example.hairsalon.models.StylistEntity;
 import com.example.hairsalon.models.TokenEntity;
 import com.example.hairsalon.repositories.IAccountRepository;
+import com.example.hairsalon.repositories.IStylistRepository;
 import com.example.hairsalon.repositories.ITokenRepository;
 import com.example.hairsalon.requests.AccountRequest.AccountSignInRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
@@ -64,7 +66,7 @@ public class AccountService implements IAccountService {
     @Override
     public SignInResponse signIn(AccountSignInRequest request) {
 
-        // Now authenticate using the retrieved account's credentials
+        // Authenticate using the provided credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmailOrPhone(),
@@ -73,28 +75,50 @@ public class AccountService implements IAccountService {
         );
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        if(!userPrincipal.getUser().getEmailVerified()){
-            sendVerifyMail(userPrincipal.getUser());
-            throw new ApiException(HttpStatus.BAD_REQUEST,"Email not verified");
-        }
-        if (!userPrincipal.getUser().isAccountStatus()) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Account is deactivated");
+
+        // Check if it's an account or a stylist and perform corresponding checks
+        if (userPrincipal.getUser() != null) {
+            // For AccountEntity
+            AccountEntity account = userPrincipal.getUser();
+
+            if (!account.getEmailVerified()) {
+                sendVerifyMail(account);
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Email not verified");
+            }
+
+            if (!account.isAccountStatus()) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "Account is deactivated");
+            }
+
+        } else if (userPrincipal.getStylist() != null) {
+            // For StylistEntity
+            StylistEntity stylist = userPrincipal.getStylist();
+
+            // Assume stylists don't need email verification, modify based on your logic
+            if (!stylist.getStylistStatus()) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "Stylist account is deactivated");
+            }
+        } else {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid user type");
         }
 
-        // Generate the tokens
+        // Generate tokens
         String accessToken = tokenProvider.createAccessToken(authentication);
         String refreshToken = tokenProvider.createRefreshToken(authentication);
 
         // Set the authentication in SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Build the response based on user type
         return SignInResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .accountID(userPrincipal.getId())
-                .accountName(userPrincipal.getUsername())
-                .role(userPrincipal.getUser().getRole())
+                .accountID(userPrincipal.getId()) // works for both Account and Stylist
+                .accountName(userPrincipal.getUsername()) // works for both Account and Stylist
+                .role(userPrincipal.getAuthorities().toString()) // Works for both Account and Stylist
                 .build();
     }
+
 
     @Override
     public ArrayList<AccountEntity> getAllAccount() {

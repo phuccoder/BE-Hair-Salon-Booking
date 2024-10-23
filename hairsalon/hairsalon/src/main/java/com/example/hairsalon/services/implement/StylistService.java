@@ -1,11 +1,17 @@
 package com.example.hairsalon.services.implement;
 
+import com.example.hairsalon.components.exceptions.ApiException;
 import com.example.hairsalon.components.exceptions.DataNotFoundException;
+import com.example.hairsalon.models.AccountEntity;
 import com.example.hairsalon.models.StylistEntity;
+import com.example.hairsalon.repositories.IAccountRepository;
 import com.example.hairsalon.repositories.IStylistRepository;
+import com.example.hairsalon.requests.AccountRequest.AccountSignInRequest;
+import com.example.hairsalon.responses.SignInResponse;
 import com.example.hairsalon.services.IStylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +25,20 @@ public class StylistService implements IStylistService {
     @Autowired
     private final IStylistRepository stylistRepository;
 
+    @Autowired
+    private final IAccountRepository accountRepository;
+
     @Override
     public StylistEntity addStylist(StylistEntity stylist) {
         // Check if stylist with the same email or phone number already exists
         Optional<StylistEntity> existStylist = stylistRepository.findByStylistEmailOrStylistPhone(stylist.getStylistEmail(), stylist.getStylistPhone());
-
+        Optional<AccountEntity> existUserPhone = accountRepository.findByAccountPhoneOrAccountEmail(stylist.getStylistPhone(), stylist.getStylistEmail());
         if (existStylist.isPresent()) {
-            throw new RuntimeException("Stylist with this email/phone already exists.");
+            throw new ApiException(HttpStatus.BAD_REQUEST,"Stylist with this email/phone already exists.");
+        }
+
+        if(existUserPhone.isPresent()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,"Stylist with this email/phone already exists.");
         }
 
         // Set default password if none is provided
