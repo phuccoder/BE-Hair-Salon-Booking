@@ -1,19 +1,17 @@
 package com.example.hairsalon.controllers.appointment;
 
+import com.example.hairsalon.models.AppointmentEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.hairsalon.models.StylistEntity;
 import com.example.hairsalon.requests.Appointment.AppointmentRequest;
 import com.example.hairsalon.services.AppointmentService;
 import com.example.hairsalon.services.IStylistService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointment-management")
@@ -30,6 +28,11 @@ public class AppointmentController {
     @PostMapping("/create")
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequest request) {
         return appointmentService.createAppointment(request);
+    }
+
+    @GetMapping("/gettAll")
+    public ResponseEntity<List<AppointmentEntity>> getAllAppointments() {
+        return ResponseEntity.ok(appointmentService.getAllAppointments());
     }
 
     @PostMapping("/create-stylist")
