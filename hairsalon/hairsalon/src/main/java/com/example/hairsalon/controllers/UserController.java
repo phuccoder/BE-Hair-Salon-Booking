@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -47,15 +48,6 @@ public class UserController {
         response.addCookie(cookie);
 
         return CoreApiResponse.success(signIn);
-    }
-
-    @GetMapping("/verify")
-    public CoreApiResponse<?> verify(
-            @RequestParam Long userId,
-            @RequestParam String token
-    ) {
-        accountService.verify(userId,token);
-        return CoreApiResponse.success("User verified successfully");
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -93,6 +85,5 @@ public class UserController {
         String[] parts = token.split("\\.");
         return parts.length == 3;
     }
-
 
 }

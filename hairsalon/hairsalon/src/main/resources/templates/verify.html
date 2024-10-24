@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Verify Account</title>
+    <link rel="icon" href="/hairsalon.jpg" type="image/jpg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('/background.jpg'); /* Update this path */
+            background-size: cover; /* Cover the entire viewport */
+            background-position: center; /* Center the background image */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9); /* Slight transparency for background */
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #5cb85c; /* Green color for the title */
+        }
+
+        .welcome {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="hidden"] {
+            display: none;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+            width: 100%; /* Full-width button */
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .error-message {
+            margin-top: 15px;
+            color: red;
+            font-weight: bold;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="welcome">
+        <h1>Welcome To HairSalon</h1>
+        <p>Please verify your account to continue.</p>
+    </div>
+    <h2>Account Verification</h2>
+    <form action="/api/v1/verify" method="post">
+        <input type="hidden" name="userId" th:value="${userId}">
+        <input type="hidden" name="token" th:value="${token}">
+        <button type="submit">Verify My Account</button>
+    </form>
+    <div class="error-message" th:if="${errorMessage}">
+        <h2 th:text="${errorMessage}"></h2>
+    </div>
+</div>
+</body>
+</html>
