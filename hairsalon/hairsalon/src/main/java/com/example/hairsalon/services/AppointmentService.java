@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.example.hairsalon.responses.ComboResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -129,6 +131,10 @@ public class AppointmentService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Đã xảy ra lỗi khi tạo lịch hẹn: " + e.getMessage());
         }
+    }
+
+    public List<AppointmentEntity> getAllAppointments() {
+        return appointmentRepository.findAll();
     }
 
     // Cập nhật lịch hẹn
