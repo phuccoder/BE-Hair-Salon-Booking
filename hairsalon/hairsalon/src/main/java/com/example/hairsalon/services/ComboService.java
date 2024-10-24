@@ -1,5 +1,17 @@
 package com.example.hairsalon.services;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+
 import com.example.hairsalon.models.Combo;
 import com.example.hairsalon.models.ComboDetail;
 import com.example.hairsalon.models.Services;
@@ -9,18 +21,6 @@ import com.example.hairsalon.repositories.ServiceRepository;
 import com.example.hairsalon.requests.ComboRequest;
 import com.example.hairsalon.responses.ComboDetailResponse;
 import com.example.hairsalon.responses.ComboResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -43,10 +43,9 @@ public class ComboService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Combo already exists");
         }
 
-        // Tạo combo mới
         Combo combo = Combo.builder()
                 .comboName(request.getComboName())
-                .comboPrice(new BigDecimal(request.getComboPrice())) // Combo price
+                .comboPrice(new BigDecimal(request.getComboPrice()))
                 .comboDescription(request.getComboDescription())
                 .build();
 
@@ -70,7 +69,6 @@ public class ComboService {
                 Services service = serviceOptional.get();
                 totalServicePrice = totalServicePrice.add(service.getServicePrice());
 
-                // Thêm dịch vụ vào combo
                 ComboDetail comboDetail = ComboDetail.builder()
                         .combo(combo)
                         .service(service)
@@ -78,7 +76,7 @@ public class ComboService {
                 comboDetailRepository.save(comboDetail);
             }
 
-            // tổng giá của các dịch vụ không được vượt quá giá của combo
+            // tổng giá các dịch vụ <= giá của combo
             if (totalServicePrice.compareTo(combo.getComboPrice()) > 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Total service price exceeds combo price");
             }

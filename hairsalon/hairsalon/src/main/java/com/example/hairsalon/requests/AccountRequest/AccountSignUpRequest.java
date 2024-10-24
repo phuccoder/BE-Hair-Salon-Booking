@@ -1,4 +1,4 @@
-package com.example.hairsalon.requests;
+package com.example.hairsalon.requests.AccountRequest;
 
 import com.example.hairsalon.components.validations.FieldMatch;
 import jakarta.validation.constraints.Email;
