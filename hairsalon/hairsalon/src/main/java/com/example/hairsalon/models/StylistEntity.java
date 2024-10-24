@@ -16,29 +16,29 @@ public class StylistEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stylist_id")
+    @Column(name = "stylistID")
     private Long stylistID;
 
-    @Column(name = "stylist_name", nullable = false)
+    @Column(name = "stylistName", nullable = false)
     private String stylistName;
 
     @Pattern(regexp = "^0[0-9]{9}$", message = "Invalid phone number")
-    @Column(name = "stylist_phone", nullable = false)
+    @Column(name = "stylistPhone", nullable = false)
     private String stylistPhone;
 
     @Email
-    @Column(name = "stylist_email", nullable = false, unique = true)
+    @Column(name = "stylistEmail", nullable = false, unique = true)
     private String stylistEmail;
 
-    @Column(name = "stylist_password", nullable = false)
-    private String stylistPassword = "123Stylist";  // Default password
+    @Column(name = "stylistPassword", nullable = false)
+    private String stylistPassword = "123Stylist"; // Default password
 
-    @Column(name = "stylist_status", nullable = false)
+    @Column(name = "stylistStatus", nullable = false)
     private Boolean stylistStatus = true;
 
     @Column(name = "role", nullable = false)
     private String role;
 
-    @Column(name = "stylist_infor")
+    @Column(name = "stylistInfor")
     private String stylistInfor;
 }

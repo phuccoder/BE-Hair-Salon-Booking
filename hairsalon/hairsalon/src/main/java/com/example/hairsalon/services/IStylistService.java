@@ -1,9 +1,6 @@
 package com.example.hairsalon.services;
 
 import com.example.hairsalon.models.StylistEntity;
-import com.example.hairsalon.requests.AccountRequest.AccountSignInRequest;
-import com.example.hairsalon.responses.SignInResponse;
-
 import java.util.List;
 
 public interface IStylistService {
