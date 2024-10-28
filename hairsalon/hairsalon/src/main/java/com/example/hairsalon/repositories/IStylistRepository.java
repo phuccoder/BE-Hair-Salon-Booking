@@ -14,5 +14,5 @@ public interface IStylistRepository extends JpaRepository<StylistEntity, Long> {
     Optional<StylistEntity> findByStylistEmailOrStylistPhone(String email, String phone);
 
     StylistEntity findByStylistID(Long stylistID);
-    
+
 }

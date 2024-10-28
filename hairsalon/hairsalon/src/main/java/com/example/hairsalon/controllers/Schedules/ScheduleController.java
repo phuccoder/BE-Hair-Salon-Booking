@@ -17,7 +17,7 @@ import java.util.List;
 import com.example.hairsalon.requests.Schedules.SchedulePutRequest;
 
 @RestController
-@RequestMapping("/api/schedules")
+@RequestMapping("/api/schedules-management")
 @Tag(name = "Schedules", description = "APIs for managing schedules")
 @PreAuthorize("hasAnyRole('STYLIST', 'ADMIN', 'STAFF')")
 public class ScheduleController {
@@ -31,19 +31,19 @@ public class ScheduleController {
         return scheduleService.createSchedule(stylistID, request);
     }
 
-    @GetMapping("/all")
+    @GetMapping("/get-all")
     @Operation(summary = "Get all schedules", description = "Retrieve all schedules")
     public ResponseEntity<List<SchedulesResponse>> getAllSchedules() {
         return ResponseEntity.ok(scheduleService.getAllSchedules());
     }
 
-    @GetMapping("/stylist/{stylistID}")
+    @GetMapping("/get-by-stylist-id/{stylistID}")
     @Operation(summary = "Get schedules by stylist ID", description = "Retrieve schedules for a specific stylist")
     public ResponseEntity<List<SchedulesResponse>> getSchedulesByStylistID(@PathVariable Long stylistID) {
         return ResponseEntity.ok(scheduleService.getSchedulesByStylistID(stylistID));
     }
 
-    @GetMapping("/{scheduleID}")
+    @GetMapping("/get-by-schedule-id/{scheduleID}")
     @Operation(summary = "Get schedule by ID", description = "Retrieve a specific schedule by its ID")
     public ResponseEntity<SchedulesResponse> getSchedulesById(@PathVariable Integer scheduleID) {
         SchedulesResponse response = scheduleService.getSchedulesById(scheduleID);

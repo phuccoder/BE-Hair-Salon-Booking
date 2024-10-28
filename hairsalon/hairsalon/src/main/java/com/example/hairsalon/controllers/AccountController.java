@@ -1,84 +1,48 @@
 package com.example.hairsalon.controllers;
 
 import com.example.hairsalon.components.apis.CoreApiResponse;
-import com.example.hairsalon.components.exceptions.ApiException;
-import com.example.hairsalon.config.AppProperties;
-import com.example.hairsalon.requests.AccountSignInRequest;
-import com.example.hairsalon.requests.AccountSignUpRequest;
-import com.example.hairsalon.requests.UserRefreshRequest;
-import com.example.hairsalon.responses.RefreshResponse;
-import com.example.hairsalon.responses.SignInResponse;
+import com.example.hairsalon.models.AccountEntity;
+import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
+import com.example.hairsalon.requests.AccountRequest.AccountUpdateRequest;
 import com.example.hairsalon.services.IAccountService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("${app.api.version.v1}/account")
+@RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AccountController {
     @Autowired
-    private AppProperties appProperties;
-
-    @Autowired
-    private IAccountService accountService;
-
-    @PostMapping("/signup")
-    public CoreApiResponse<?> signup(@Valid @RequestBody AccountSignUpRequest signUpRequest) {
-        accountService.signUp(signUpRequest);
-        return CoreApiResponse.success("User registered successfully");
+    IAccountService accountService;
+    @GetMapping("/getAll")
+    public CoreApiResponse<ArrayList<AccountEntity>> getAllUser() {
+        return CoreApiResponse.success(accountService.getAllAccount());
     }
 
-    @PostMapping("/signIn")
-    public CoreApiResponse<SignInResponse> signIn(@Valid @RequestBody AccountSignInRequest request, HttpServletResponse response) {
-        SignInResponse signIn = accountService.signIn(request);
-        Cookie cookie = new Cookie("refreshToken", signIn.getRefreshToken());
-
-        cookie.setMaxAge(appProperties.getAuth().getRefreshTokenExpirationMsec());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-
-        return CoreApiResponse.success(signIn);
+    @GetMapping("/{id}")
+    public CoreApiResponse<AccountEntity> getUserById(@PathVariable Long id) {
+        return CoreApiResponse.success(accountService.getAccountById(id));
     }
 
-    @GetMapping("/verify")
-    public CoreApiResponse<?> verify(
-            @RequestParam Long userId,
-            @RequestParam String token
-    ) {
-        accountService.verify(userId,token);
-        return CoreApiResponse.success("User verified successfully");
+    @PutMapping("/{id}")
+    public CoreApiResponse<AccountEntity> updateUser(@PathVariable Long id, @RequestBody AccountUpdateRequest accountUpdateRequest) {
+        return CoreApiResponse.success(accountService.updatePersonalAccount(id, accountUpdateRequest));
     }
 
-    @PostMapping("/refresh")
-    public CoreApiResponse<?> refresh(
-            @CookieValue(value = "refreshToken", required = false) String cookieRT,
-            @RequestBody UserRefreshRequest bodyRT
-    ) {
-        if(bodyRT == null && !isValidToken(cookieRT)){
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid token");
-        }
-        String token = bodyRT != null ? bodyRT.getRefreshToken() : cookieRT;
-
-        String accessToken = accountService.refresh(token);
-
-        return CoreApiResponse.success(new RefreshResponse(accessToken),"User refresh token successfully");
+    @DeleteMapping("/{id}")
+    public CoreApiResponse<AccountEntity> banUser(@PathVariable Long id) {
+        return CoreApiResponse.success(accountService.banUser(id));
     }
 
-    private boolean isValidToken(String token) {
-        return token != null && isJWT(token);
+    @PostMapping("/create/{role}")
+    public CoreApiResponse<?> createAccount(@RequestBody AccountSignUpRequest accountSignUpRequest, @PathVariable String role) {
+        accountService.signUpByRole(accountSignUpRequest, role);
+        return CoreApiResponse.success("Create Successfully! Please check mail to verify!");
     }
-
-    private boolean isJWT(String token) {
-        String[] parts = token.split("\\.");
-        return parts.length == 3;
-    }
-
 
 }
