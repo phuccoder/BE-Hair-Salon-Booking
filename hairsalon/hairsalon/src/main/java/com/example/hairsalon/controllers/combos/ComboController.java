@@ -64,4 +64,10 @@ public class ComboController {
     public ResponseEntity<?> addServiceToCombo(@PathVariable Integer comboID, @PathVariable Integer serviceID) {
         return comboService.addServiceToCombo(comboID, serviceID);
     }
+
+    // Delete service from combo
+    @DeleteMapping("/remove-service-from-combo/{comboID}/{serviceID}")
+    public ResponseEntity<?> deleteServiceFromCombo(@PathVariable Integer comboID, @PathVariable Integer serviceID) {
+        return comboService.removeServiceFromCombo(comboID, serviceID);
+    }
 }
