@@ -4,6 +4,7 @@ import com.example.hairsalon.components.apis.CoreApiResponse;
 import com.example.hairsalon.components.exceptions.ApiException;
 import com.example.hairsalon.config.AppProperties;
 import com.example.hairsalon.models.AccountEntity;
+import com.example.hairsalon.models.StylistEntity;
 import com.example.hairsalon.requests.AccountRequest.AccountSignInRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountSignUpRequest;
 import com.example.hairsalon.requests.AccountRequest.AccountUpdateRequest;
@@ -11,6 +12,7 @@ import com.example.hairsalon.requests.UserRefreshRequest;
 import com.example.hairsalon.responses.RefreshResponse;
 import com.example.hairsalon.responses.SignInResponse;
 import com.example.hairsalon.services.IAccountService;
+import com.example.hairsalon.services.IStylistService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -21,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("${app.api.version.v1}/user")
@@ -30,6 +34,9 @@ public class UserController {
 
     @Autowired
     private IAccountService accountService;
+
+    @Autowired
+    private IStylistService stylistService;
 
     @PostMapping("/signup")
     public CoreApiResponse<?> signup(@Valid @RequestBody AccountSignUpRequest signUpRequest) {
@@ -48,6 +55,12 @@ public class UserController {
         response.addCookie(cookie);
 
         return CoreApiResponse.success(signIn);
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/stylist/active")
+    public List<StylistEntity> getActiveStylists() {
+        return stylistService.getActiveStylists();
     }
 
     @PreAuthorize("hasRole('USER')")

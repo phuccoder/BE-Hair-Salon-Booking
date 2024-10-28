@@ -6,6 +6,7 @@ import com.example.hairsalon.requests.StylistRequest;
 import com.example.hairsalon.services.IStylistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import static com.example.hairsalon.components.mapper.StylistMapper.INSTANCE;
@@ -16,9 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/stylist")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+@PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER')")
 public class StylistController {
-
+    @Autowired
     private final IStylistService stylistService;
 
     @PostMapping
