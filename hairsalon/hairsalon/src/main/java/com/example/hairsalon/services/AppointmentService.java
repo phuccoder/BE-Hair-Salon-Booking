@@ -1,30 +1,22 @@
 package com.example.hairsalon.services;
 
+import com.example.hairsalon.models.*;
+import com.example.hairsalon.repositories.*;
+import com.example.hairsalon.requests.Appointment.*;
+import com.example.hairsalon.responses.AppointmentResponse;
+import com.example.hairsalon.responses.ReviewResponse;
+import com.example.hairsalon.responses.AppointmentDetailResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import com.example.hairsalon.responses.ComboResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import com.example.hairsalon.models.AppointmentEntity;
-import com.example.hairsalon.models.Schedules;
-import com.example.hairsalon.models.AppointmentDetailEntity;
-import com.example.hairsalon.models.StylistEntity;
-import com.example.hairsalon.repositories.AppointmentDetailRepository;
-import com.example.hairsalon.repositories.AppointmentRepository;
-import com.example.hairsalon.repositories.SchedulesRepository;
-import com.example.hairsalon.repositories.IStylistRepository;
-import com.example.hairsalon.repositories.ServiceRepository;
-import com.example.hairsalon.requests.Appointment.AppointmentDetailRequest;
-import com.example.hairsalon.requests.Appointment.AppointmentRequest;
-import com.example.hairsalon.repositories.ComboRepository;
 
 @Service
 public class AppointmentService {
@@ -125,7 +117,7 @@ public class AppointmentService {
             // Cập nhật lại lịch hẹn với tổng tiền
             appointmentRepository.save(savedAppointment);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedAppointment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponse(savedAppointment));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -133,8 +125,12 @@ public class AppointmentService {
         }
     }
 
-    public List<AppointmentEntity> getAllAppointments() {
-        return appointmentRepository.findAll();
+    public ResponseEntity<?> getAllAppointments() {
+        List<AppointmentEntity> appointments = appointmentRepository.findAll();
+        List<AppointmentResponse> responses = appointments.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     // Cập nhật lịch hẹn
@@ -204,12 +200,44 @@ public class AppointmentService {
             // Cập nhật lại lịch hẹn với tổng tiền
             appointmentRepository.save(appointment);
 
-            return ResponseEntity.status(HttpStatus.OK).body(appointment);
+            return ResponseEntity.status(HttpStatus.OK).body(convertToResponse(appointment));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Đã xảy ra lỗi khi cập nhật lịch hẹn: " + e.getMessage());
         }
+    }
+
+    // Kiểm tra xem stylist có rảnh không
+    private boolean isStylistAvailable(Long stylistID, LocalDateTime appointmentDate) {
+        List<AppointmentEntity> existingAppointments = appointmentRepository
+                .findByStylistIDAndAppointmentDate(stylistID, appointmentDate);
+        if (!existingAppointments.isEmpty()) {
+            return false;
+        }
+
+        List<Schedules> schedules = scheduleRepository.findByStylist_StylistID(stylistID);
+        for (Schedules schedule : schedules) {
+            if (schedule.getDayOfWeek().name().equalsIgnoreCase(appointmentDate.getDayOfWeek().name())) {
+                LocalTime appointmentTime = appointmentDate.toLocalTime();
+                if (!appointmentTime.isBefore(schedule.getStartTime())
+                        && !appointmentTime.isAfter(schedule.getEndTime())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Tìm stylist ngẫu nhiên rảnh
+    private StylistEntity findAvailableStylist(LocalDateTime appointmentDate) {
+        List<StylistEntity> allStylists = stylistRepository.findAll();
+        for (StylistEntity stylist : allStylists) {
+            if (isStylistAvailable(stylist.getStylistID(), appointmentDate)) {
+                return stylist;
+            }
+        }
+        return null;
     }
 
     // Huỷ lịch hẹn
@@ -254,35 +282,50 @@ public class AppointmentService {
         }
     }
 
-    // Kiểm tra xem stylist có rảnh không
-    private boolean isStylistAvailable(Long stylistID, LocalDateTime appointmentDate) {
-        List<AppointmentEntity> existingAppointments = appointmentRepository
-                .findByStylistIDAndAppointmentDate(stylistID, appointmentDate);
-        if (!existingAppointments.isEmpty()) {
-            return false;
-        }
-
-        List<Schedules> schedules = scheduleRepository.findByStylist_StylistID(stylistID);
-        for (Schedules schedule : schedules) {
-            if (schedule.getDayOfWeek().name().equalsIgnoreCase(appointmentDate.getDayOfWeek().name())) {
-                LocalTime appointmentTime = appointmentDate.toLocalTime();
-                if (!appointmentTime.isBefore(schedule.getStartTime())
-                        && !appointmentTime.isAfter(schedule.getEndTime())) {
-                    return true;
-                }
-            }
-        }
-        return false;
+     // Get appointment by appointment ID and convert to response
+    public ResponseEntity<?> getAppointmentByAppointmentID(Integer appointmentID) {
+        List<AppointmentEntity> appointments = appointmentRepository.findByAppointmentID(appointmentID);
+        List<AppointmentResponse> responses = appointments.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
-    // Tìm stylist ngẫu nhiên rảnh
-    private StylistEntity findAvailableStylist(LocalDateTime appointmentDate) {
-        List<StylistEntity> allStylists = stylistRepository.findAll();
-        for (StylistEntity stylist : allStylists) {
-            if (isStylistAvailable(stylist.getStylistID(), appointmentDate)) {
-                return stylist;
-            }
-        }
-        return null;
+    // Convert AppointmentEntity to AppointmentResponse
+    private AppointmentResponse convertToResponse(AppointmentEntity appointment) {
+        List<AppointmentDetailResponse> detailResponses = appointment.getAppointmentDetails().stream()
+                .map(detail -> AppointmentDetailResponse.builder()
+                        .appointmentDetailID(detail.getAppointmentDetailID())
+                        .serviceID(detail.getService() != null ? detail.getService().getServiceID() : null)
+                        .comboID(detail.getCombo() != null ? detail.getCombo().getComboID() : null)
+                        .serviceName(detail.getService() != null ? detail.getService().getServiceName() : null)
+                        .comboName(detail.getCombo() != null ? detail.getCombo().getComboName() : null)
+                        .servicePrice(detail.getService() != null ? detail.getService().getServicePrice() : null)
+                        .comboPrice(detail.getCombo() != null ? detail.getCombo().getComboPrice() : null)
+                        .build())
+                .collect(Collectors.toList());
+            
+                List<ReviewResponse> reviewResponses = appointment.getReviews().stream()
+                .map(review -> ReviewResponse.builder()
+                        .reviewID(review.getReviewID())
+                        .comment(review.getComment())
+                        .reviewRating(review.getReviewRating())
+                        .accountID(review.getAccount().getAccountID().longValue())
+                        .appointmentID(review.getAppointment().getAppointmentID())
+                        .reviewDate(review.getReviewDate())
+                        .build())
+                .collect(Collectors.toList());
+
+        return AppointmentResponse.builder()
+                .appointmentID(appointment.getAppointmentID())
+                .appointmentDate(appointment.getAppointmentDate())
+                .appointmentStatus(appointment.getAppointmentStatus())
+                .accountID(appointment.getAccountID())
+                .stylistID(appointment.getStylistID())
+                .voucherID(appointment.getVoucherID())
+                .appointmentPrice(appointment.getAppointmentPrice())
+                .appointmentDetails(detailResponses)
+                .reviews(reviewResponses)
+                .build();
     }
 }
