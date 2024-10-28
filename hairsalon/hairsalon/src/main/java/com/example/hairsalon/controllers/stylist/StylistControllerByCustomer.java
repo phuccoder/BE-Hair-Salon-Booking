@@ -1,4 +1,4 @@
-package com.example.hairsalon.controllers;
+package com.example.hairsalon.controllers.stylist;
 
 import com.example.hairsalon.components.apis.CoreApiResponse;
 import com.example.hairsalon.models.StylistEntity;
@@ -10,29 +10,22 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import static com.example.hairsalon.components.mapper.StylistMapper.INSTANCE;
 
-
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/stylist")
+@RequestMapping("/api/customer/stylist")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-public class StylistController {
+@PreAuthorize("hasAnyRole('CUSTOMER')")
+public class StylistControllerByCustomer {
 
     private final IStylistService stylistService;
 
-    @PostMapping
-    public CoreApiResponse<?> addStylist(@Valid @RequestBody StylistRequest stylistRequest) {
-        StylistEntity stylist = INSTANCE.toEntity(stylistRequest);
-        return CoreApiResponse.success(stylistService.addStylist(stylist));
-    }
-
-    @GetMapping("/getAll")
+    @GetMapping("/get-all-stylists")
     public CoreApiResponse<List<StylistEntity>> getAllStylists() {
         return CoreApiResponse.success(stylistService.getAllStylists());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get-by-id/{id}")
     public CoreApiResponse<StylistEntity> getStylistById(@PathVariable Long id) {
         return CoreApiResponse.success(stylistService.getStylistById(id));
     }
@@ -40,15 +33,5 @@ public class StylistController {
     @GetMapping("/active")
     public List<StylistEntity> getActiveStylists() {
         return stylistService.getActiveStylists();
-    }
-
-    @PutMapping("/{id}")
-    public StylistEntity updateStylist(@PathVariable Long id, @RequestBody StylistEntity updatedStylist) {
-        return stylistService.updateStylist(id, updatedStylist);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteStylist(@PathVariable Long id) {
-        stylistService.deleteStylist(id);
     }
 }
