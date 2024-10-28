@@ -108,6 +108,17 @@ public class AccountService implements IAccountService {
 
         // Set the authentication in SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        String role = "user";
+        String roleUserPrincipal = userPrincipal.getAuthorities().toString();
+        if(roleUserPrincipal.equals("[ROLE_STYLIST]")) {
+            role = "stylist";
+        } else if(roleUserPrincipal.equals("[ROLE_ADMIN]")) {
+            role = "admin";
+        } else if(roleUserPrincipal.equals("[ROLE_STAFF]")) {
+            role = "staff";
+        } else if(roleUserPrincipal.equals("[ROLE_MANAGER]")) {
+            role = "manager";
+        }
 
         // Build the response based on user type
         return SignInResponse.builder()
@@ -115,7 +126,7 @@ public class AccountService implements IAccountService {
                 .refreshToken(refreshToken)
                 .accountID(userPrincipal.getId()) // works for both Account and Stylist
                 .accountName(userPrincipal.getUsername()) // works for both Account and Stylist
-                .role(userPrincipal.getAuthorities().toString()) // Works for both Account and Stylist
+                .role(role) // Works for both Account and Stylist
                 .build();
     }
 
