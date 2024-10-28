@@ -1,5 +1,6 @@
 package com.example.hairsalon.controllers.appointment;
 
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import com.example.hairsalon.models.StylistEntity;
 import com.example.hairsalon.requests.Appointment.AppointmentRequest;
 import com.example.hairsalon.services.AppointmentService;
 import com.example.hairsalon.services.IStylistService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointment-management")
