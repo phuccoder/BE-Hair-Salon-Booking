@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-
-
 @Entity
 @Table(name = "appointment")
 @Data
@@ -26,7 +24,7 @@ public class AppointmentEntity {
     @Column(name = "appointmentID")
     private Integer appointmentID;
 
-     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "appointmentDate", nullable = false)
     private LocalDateTime appointmentDate;
 
@@ -47,4 +45,7 @@ public class AppointmentEntity {
 
     @OneToMany(mappedBy = "appointment")
     private List<AppointmentDetailEntity> appointmentDetails;
+
+    @OneToMany(mappedBy = "appointment")
+    private List<ReviewEntity> reviews;
 }
