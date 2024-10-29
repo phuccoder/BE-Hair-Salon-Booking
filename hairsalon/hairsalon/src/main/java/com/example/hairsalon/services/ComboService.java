@@ -107,6 +107,7 @@ public class ComboService {
                 .serviceID(comboDetail.getService().getServiceID())
                 .serviceName(comboDetail.getService().getServiceName())
                 .servicePrice(comboDetail.getService().getServicePrice())
+                .serviceImage(comboDetail.getService().getServiceImage())
                 .build();
     }
 

@@ -38,4 +38,7 @@ public class Services {
     @Column(name = "servicePrice", precision = 10, scale = 0)
     private BigDecimal servicePrice;
 
+    @Column(name = "serviceImage")
+    private String serviceImage;
+
 }
