@@ -16,7 +16,6 @@ import com.example.hairsalon.repositories.ComboDetailRepository;
 import com.example.hairsalon.repositories.ComboRepository;
 import com.example.hairsalon.repositories.ServiceRepository;
 import com.example.hairsalon.requests.ServiceRequest;
-import com.google.cloud.storage.Storage;
 
 @Service
 @Validated
@@ -30,9 +29,6 @@ public class ServicesService {
 
     @Autowired
     private ComboDetailRepository comboDetailRepository;
-
-    @Autowired
-    private Storage storage;
 
     @Autowired
     private FirebaseStorageService firebaseStorageService;
@@ -76,7 +72,7 @@ public class ServicesService {
 
     // Update service
     @Transactional
-    public ResponseEntity<?> updateService(Integer serviceID, ServiceRequest serviceRequest) {
+    public ResponseEntity<?> updateService(Integer serviceID, ServiceRequest serviceRequest, MultipartFile file) {
         Services existingService = serviceRepository.findById(serviceID).orElse(null);
         if (existingService == null) {
             return ResponseEntity.badRequest().body("Service ID is not found");
@@ -84,11 +80,27 @@ public class ServicesService {
 
         existingService.setServiceName(serviceRequest.getServiceName());
         existingService.setServicePrice(serviceRequest.getServicePrice());
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                // Delete the old image from Firebase Storage
+                if (existingService.getServiceImage() != null) {
+                    firebaseStorageService.deleteFile(existingService.getServiceImage());
+                }
+
+                // Upload the new image to Firebase Storage
+                String imageUrl = firebaseStorageService.uploadFile(file, "services/");
+                existingService.setServiceImage(imageUrl);
+            } catch (IOException e) {
+                return ResponseEntity.status(500).body("Failed to upload image: " + e.getMessage());
+            }
+        }
+
         serviceRepository.save(existingService);
         return ResponseEntity.ok("Service updated successfully");
     }
 
-    // Delete serviceThe method builder() is undefined for the type
+    // Delete service
     @Transactional
     public ResponseEntity<?> deleteService(Integer id) {
         if (!serviceRepository.existsById(id)) {
