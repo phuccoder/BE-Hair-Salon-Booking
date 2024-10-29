@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.example.hairsalon.models.Services;
 import com.example.hairsalon.requests.ServiceRequest;
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/services-management")
-// @PreAuthorize("hasAnyRole('STYLIST', 'ADMIN', 'STAFF')")
+@PreAuthorize("hasAnyRole('STYLIST', 'ADMIN', 'STAFF')")
 public class ServiceController {
 
     @Autowired
