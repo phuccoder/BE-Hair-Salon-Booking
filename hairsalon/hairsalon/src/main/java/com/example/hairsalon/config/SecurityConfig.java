@@ -78,7 +78,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/**").permitAll()
                         .requestMatchers("/favicon.ico").permitAll()
-                        .requestMatchers("/api/customer/**").permitAll()
+                        // .requestMatchers("/api/customer/**").permitAll()
                 );
 
         http.authenticationProvider(authenticationProvider());
