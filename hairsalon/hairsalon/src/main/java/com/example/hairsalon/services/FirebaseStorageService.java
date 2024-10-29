@@ -40,4 +40,22 @@ public class FirebaseStorageService {
         logger.info("File " + fullPath + " uploaded successfully to bucket: " + BUCKET_NAME);
         return "https://storage.googleapis.com/" + BUCKET_NAME + "/services/" + fileName;
     }
+
+    public void deleteFile(String fileUrl) {
+        try {
+            String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1, fileUrl.indexOf("?"));
+            String fullPath = "services/" + fileName;
+
+            BlobId blobId = BlobId.of(BUCKET_NAME, fullPath);
+            boolean deleted = storage.delete(blobId);
+
+            if (deleted) {
+                logger.info("File " + fullPath + " was deleted from bucket: " + BUCKET_NAME);
+            } else {
+                logger.warning("File " + fullPath + " was not found in bucket: " + BUCKET_NAME);
+            }
+        } catch (Exception e) {
+            logger.severe("Error deleting file: " + e.getMessage());
+        }
+    }
 }

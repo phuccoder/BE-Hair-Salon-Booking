@@ -8,17 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.example.hairsalon.models.Services;
 import com.example.hairsalon.requests.ServiceRequest;
@@ -63,10 +62,18 @@ public class ServiceController {
     }
 
     // Update service
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateService(@PathVariable Integer id,
-            @RequestBody ServiceRequest request) {
-        return serviceService.updateService(id, request);
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateService(
+            @PathVariable Integer id,
+            @RequestPart("serviceRequest") String serviceRequestJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ServiceRequest serviceRequest = objectMapper.readValue(serviceRequestJson, ServiceRequest.class);
+            return serviceService.updateService(id, serviceRequest, file);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
     }
 
     // Delete service
