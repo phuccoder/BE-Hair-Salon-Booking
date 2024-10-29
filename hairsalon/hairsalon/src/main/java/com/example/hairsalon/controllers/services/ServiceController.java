@@ -21,6 +21,7 @@ import com.example.hairsalon.services.ServicesService;
 
 @RestController
 @RequestMapping("/api/services-management")
+@PreAuthorize("hasAnyRole('STYLIST', 'ADMIN', 'STAFF')")
 public class ServiceController {
 
     @Autowired

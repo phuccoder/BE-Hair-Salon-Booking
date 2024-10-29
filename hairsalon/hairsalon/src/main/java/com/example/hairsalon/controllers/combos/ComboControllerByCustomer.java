@@ -14,7 +14,7 @@ import com.example.hairsalon.services.ComboService;
 
 @RestController
 @RequestMapping("/api/customer/combos")
-@PreAuthorize("hasAnyRole('CUSTOMER')")
+@PreAuthorize("hasAnyRole('USER')")
 public class ComboControllerByCustomer {
 
     @Autowired
