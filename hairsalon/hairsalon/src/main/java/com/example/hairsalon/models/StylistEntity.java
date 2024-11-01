@@ -41,4 +41,7 @@ public class StylistEntity {
 
     @Column(name = "stylistInfor")
     private String stylistInfor;
+
+    @Column(name = "stylistAvatar")
+    private String stylistAvatar;
 }
