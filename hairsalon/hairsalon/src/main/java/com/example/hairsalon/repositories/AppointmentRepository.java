@@ -14,4 +14,6 @@ public interface AppointmentRepository  extends JpaRepository<AppointmentEntity,
     List<AppointmentEntity> findByStylistIDAndAppointmentDate(Long stylistID, LocalDateTime appointmentDate);
 
     List<AppointmentEntity> findByAppointmentID(Integer appointmentID);
+
+    List<AppointmentEntity> findByAccountID(Long accountID);
 }
