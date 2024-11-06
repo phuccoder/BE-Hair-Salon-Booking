@@ -117,7 +117,7 @@ public class AppointmentService {
             // Cập nhật lại lịch hẹn với tổng tiền
             appointmentRepository.save(savedAppointment);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(convertToResponse(savedAppointment));
+            return ResponseEntity.ok("Booking Appointment Successfully");
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -248,11 +248,11 @@ public class AppointmentService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Không tìm thấy lịch hẹn với ID đã chọn.");
             }
-        
+
             AppointmentEntity appointment = optionalAppointment.get();
             appointment.setAppointmentStatus("CANCELLED");
             appointmentRepository.save(appointment);
-        
+
             return ResponseEntity.status(HttpStatus.OK).body("Lịch hẹn đã được huỷ.");
 
         } catch (Exception e) {
@@ -282,9 +282,17 @@ public class AppointmentService {
         }
     }
 
-     // Get appointment by appointment ID and convert to response
+    // Get appointment by appointment ID and convert to response
     public ResponseEntity<?> getAppointmentByAppointmentID(Integer appointmentID) {
         List<AppointmentEntity> appointments = appointmentRepository.findByAppointmentID(appointmentID);
+        List<AppointmentResponse> responses = appointments.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    public ResponseEntity<?> getAppointmentByAccountID(Long accountID) {
+        List<AppointmentEntity> appointments = appointmentRepository.findByAccountID(accountID);
         List<AppointmentResponse> responses = appointments.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -304,8 +312,8 @@ public class AppointmentService {
                         .comboPrice(detail.getCombo() != null ? detail.getCombo().getComboPrice() : null)
                         .build())
                 .collect(Collectors.toList());
-            
-                List<ReviewResponse> reviewResponses = appointment.getReviews().stream()
+
+        List<ReviewResponse> reviewResponses = appointment.getReviews().stream()
                 .map(review -> ReviewResponse.builder()
                         .reviewID(review.getReviewID())
                         .comment(review.getComment())
