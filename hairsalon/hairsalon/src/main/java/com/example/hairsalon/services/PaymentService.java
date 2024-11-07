@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -140,7 +141,7 @@ public class PaymentService {
         return ResponseEntity.status(HttpStatus.OK).body(paymentResponse);
     }
 
-    public ResponseEntity<TransactionStatusResponse> handlePaymentReturn(String bankCode, Integer appointmentID,
+    public ResponseEntity<?> handlePaymentReturn(String bankCode, Integer appointmentID,
             String responseCode, Integer transactionNo) {
         AppointmentEntity appointment = appointmentRepository.findById(appointmentID).orElse(null);
         if (appointment == null) {
@@ -155,13 +156,19 @@ public class PaymentService {
             transactionStatusResponse.setMessage("Thanh toán thành công");
             transactionStatusResponse.setData("");
 
-            // Save payment
-            PaymentEntity payment = paymentRepository.findByAppointment_AppointmentID(appointmentID);
-            payment.setPaymentStatus("Đã thanh toán");
-            payment.setBankCode(bankCode);
-            payment.setTransactionNo(transactionNo);
-            payment.setResponseCode(responseCode);
-            paymentRepository.save(payment);
+            // Lấy payment mới nhất của appointment
+            List<PaymentEntity> payments = paymentRepository.findByAppointment_AppointmentID(appointmentID);
+            PaymentEntity payment = payments.stream()
+                    .max(Comparator.comparing(PaymentEntity::getPaymentID))
+                    .orElse(null);
+
+            if (payment != null) {
+                payment.setPaymentStatus("Đã thanh toán");
+                payment.setBankCode(bankCode);
+                payment.setTransactionNo(transactionNo);
+                payment.setResponseCode(responseCode);
+                paymentRepository.save(payment);
+            }
 
             // Update appointment status
             appointment.setAppointmentStatus("Đã thanh toán");
@@ -172,8 +179,12 @@ public class PaymentService {
             transactionStatusResponse.setMessage("Thanh toán thất bại");
             transactionStatusResponse.setData("");
 
-            // Save payment
-            PaymentEntity payment = paymentRepository.findByAppointment_AppointmentID(appointmentID);
+            // Lấy payment mới nhất của appointment
+            List<PaymentEntity> payments = paymentRepository.findByAppointment_AppointmentID(appointmentID);
+            PaymentEntity payment = payments.stream()
+                    .max(Comparator.comparing(PaymentEntity::getPaymentID))
+                    .orElse(null);
+
             if (payment == null) {
                 transactionStatusResponse.setStatus("No");
                 transactionStatusResponse.setMessage("Chưa có thông tin thanh toán");
@@ -208,11 +219,15 @@ public class PaymentService {
     }
 
     public ResponseEntity<?> getPaymentByAppointmentID(Integer appointmentID) {
-        PaymentEntity payment = paymentRepository.findByAppointment_AppointmentID(appointmentID);
-        if (payment == null) {
+        List<PaymentEntity> payments = paymentRepository.findByAppointment_AppointmentID(appointmentID);
+        if (payments.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
         }
-        PaymentDetailResponse response = convertToResponse(payment);
+        // Trả về payment mới nhất
+        PaymentEntity latestPayment = payments.stream()
+                .max(Comparator.comparing(PaymentEntity::getPaymentID))
+                .orElse(null);
+        PaymentDetailResponse response = convertToResponse(latestPayment);
         return ResponseEntity.ok(response);
     }
 
