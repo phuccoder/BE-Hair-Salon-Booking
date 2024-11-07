@@ -5,7 +5,14 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +46,7 @@ public class PaymentService {
     public ResponseEntity<?> createPayment(Integer appointmentID) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
-        String orderType = "other";
+        String orderType = "billPayment";
         AppointmentEntity appointment = appointmentRepository.findById(appointmentID).orElse(null);
         if (appointment == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found");
@@ -71,7 +78,7 @@ public class PaymentService {
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", String.valueOf(appointment.getAppointmentID()));
-        vnp_Params.put("vnp_AppointmentInfo", "Thanh toan lich hen:" + appointment.getAppointmentID());
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan lich hen:" + appointment.getAppointmentID());
         vnp_Params.put("vnp_OrderType", orderType);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", PaymentConfig.vnp_ReturnUrl);
