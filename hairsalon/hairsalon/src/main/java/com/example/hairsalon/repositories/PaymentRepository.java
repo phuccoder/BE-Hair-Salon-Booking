@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends JpaRepository<PaymentEntity, Integer> {
 
-    PaymentEntity findByAppointment_AppointmentID(Integer appointmentID);
+    List<PaymentEntity> findByAppointment_AppointmentID(Integer appointmentID);
 
     List<PaymentEntity> findByAccount_AccountID(Long accountID);
 

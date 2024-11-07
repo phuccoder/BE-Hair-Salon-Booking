@@ -31,7 +31,7 @@ public class PaymentControllerByCustomer {
 
     // customer
     @GetMapping(value = "/vnpay-return", produces = "application/json;charset=UTF-8")
-    public ResponseEntity<TransactionStatusResponse> vnpayReturn(
+    public ResponseEntity<?> vnpayReturn(
             @RequestParam(value = "vnp_BankCode") String bankCode,
             @RequestParam(value = "vnp_OrderInfo") Integer appointmentID,
             @RequestParam(value = "vnp_ResponseCode") String responseCode,
