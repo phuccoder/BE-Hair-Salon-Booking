@@ -46,7 +46,7 @@ public class PaymentService {
     public ResponseEntity<?> createPayment(Integer appointmentID) throws UnsupportedEncodingException {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
-        String orderType = "VNPAY";
+        String orderType = "billPayment";
         AppointmentEntity appointment = appointmentRepository.findById(appointmentID).orElse(null);
         if (appointment == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Appointment not found");
@@ -124,7 +124,7 @@ public class PaymentService {
         // Save payment
         PaymentEntity payment = new PaymentEntity();
         payment.setAppointment(appointment);
-        // payment.setAccount(account);
+        payment.setAccount(account);
         payment.setPaymentMethod("VNPay");
         payment.setPaymentStatus("Pending");
         payment.setPaymentDate(vnp_CreateDate);

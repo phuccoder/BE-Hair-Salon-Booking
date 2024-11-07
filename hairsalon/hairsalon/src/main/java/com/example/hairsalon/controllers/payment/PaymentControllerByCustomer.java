@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +37,16 @@ public class PaymentControllerByCustomer {
             @RequestParam(value = "vnp_ResponseCode") String responseCode,
             @RequestParam(value = "vnp_TransactionNo", required = false) Integer transactionNo) {
         return paymentService.handlePaymentReturn(bankCode, appointmentID, responseCode, transactionNo);
+    }
+
+    @GetMapping("/all-by-account/{accountID}")
+    public ResponseEntity<?> getAllPaymentsByAccountID(@PathVariable Long accountID) {
+        return paymentService.getPaymentByAccountID(accountID);
+    }
+
+    @GetMapping("/appointment/{appointmentID}")
+    public ResponseEntity<?> getPaymentByAppointmentID(@PathVariable Integer appointmentID) {
+        return paymentService.getPaymentByAppointmentID(appointmentID);
     }
 
 }
